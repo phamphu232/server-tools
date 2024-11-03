@@ -1,0 +1,18 @@
+{
+    "name": "phamphu232/server-tools",
+    "description": "Server tools",
+    "authors": [
+        {
+            "name": "PhamPhu232",
+            "email": "phamphu232@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "helpers\\": "helpers"
+        }
+    },
+    "require-dev": {
+        "laravel/envoy": "^2.8"
+    }
+}
