@@ -24,9 +24,9 @@ php vendor/bin/envoy run deploy
 ## sudo vi /etc/crontab
 
 ## Client machine
-* * * * * ec2-user cd ~/.server-tools && sh ./app/client/schedule.sh 'http://localhost/server-tools/app/server/server.php' > schedule.log 2>&1
+* * * * * ec2-user /home/ec2-user/.server-tools/app/client/schedule.sh 'http://localhost/server-tools/server-tools/server.php' > /home/ec2-user/.server-tools/schedule.log 2>&1
 # OR
-* * * * * ubuntu cd ~/.server-tools && sh ./app/client/schedule.sh 'http://localhost/server-tools/app/server/server.php' > schedule.log 2>&1
+* * * * * ubuntu /home/ec2-user/.server-tools/app/client/schedule.sh 'http://localhost/server-tools/server-tools/server.php' > /home/ec2-user/.server-tools/schedule.log 2>&1
 
 ## Server machine
 * * * * * ubuntu cd ~/.server-tools && sh ./app/server/schedule.sh > schedule_server.log 2>&1

@@ -120,7 +120,7 @@ try {
     if ($row) {
         $sql = "";
         $sql .= "UPDATE servers SET username = :username, instance_id = :instance_id, cpu = :cpu, ram = :ram, disk = :disk, input_raw = :input_raw, input_history = :input_history, updated_at = :updated_at";
-        $sql .= " WHERE platform = :platform AND public_ip = :public_ip LIMIT 1";
+        $sql .= " WHERE platform = :platform AND public_ip = :public_ip";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':instance_id', $requestContent['INSTANCE_ID'], PDO::PARAM_STR);
         $inputHistoryOld = json_decode($row['input_history'], true);
@@ -166,7 +166,7 @@ try {
 
     $stmt->execute();
 } catch (\Exception $e) {
-    $message = "{$mentor}\n```ERROR: [Line: {$e->getLine()}] {$e->getMessage()}```";
+    $message = "{$mentor}\n```ERROR: [File: {$e->getFile()}] [Line: {$e->getLine()}] {$e->getMessage()}```";
     echo $message;
     GoogleChat::send($message, $config['google_chat']['webhook_system_team']);
 }
