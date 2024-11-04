@@ -6,4 +6,4 @@ env.ini
 composer.lock
 database.sqlite
 *.log
-Envoy.php
+Envoy.blade.php
