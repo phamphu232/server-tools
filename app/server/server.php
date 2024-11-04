@@ -165,6 +165,9 @@ try {
     }
 
     $stmt->execute();
+
+    echo $inputRaw;
+
 } catch (\Exception $e) {
     $message = "{$mentor}\n```ERROR: [File: {$e->getFile()}] [Line: {$e->getLine()}] {$e->getMessage()}```";
     echo $message;
