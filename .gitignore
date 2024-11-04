@@ -1,0 +1,9 @@
+/vendor/
+env.ini
+
+!/logs/.gitkeep
+/logs/*.log
+composer.lock
+database.sqlite
+*.log
+Envoy.blade.php
