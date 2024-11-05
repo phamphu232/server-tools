@@ -22,7 +22,7 @@ $allowedIp = explode(',', $config['app_server']['allowed_ip']);
 
 try {
     if (!in_array($clientIp, $allowedIp)) {
-        echo 'IP is not allowed';
+        echo "Your ip: {$clientIp} is not allowed";
         exit();
     }
 
