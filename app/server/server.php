@@ -1,12 +1,14 @@
 <?php
 
+require_once __DIR__ . '/../../helpers/App.php';
+require_once __DIR__ . '/../../helpers/Cache.php';
 require_once __DIR__ . '/../../helpers/Config.php';
-require_once __DIR__ . '/../../helpers/Utils.php';
 require_once __DIR__ . '/../../helpers/GoogleChat.php';
 
+use helpers\App;
+use helpers\Cache;
 use helpers\Config;
 use helpers\GoogleChat;
-use helpers\Utils;
 
 $databaseFile = __DIR__ . '/../../database.sqlite';
 
@@ -15,7 +17,7 @@ $config = Config::get();
 $mentor = $config['google_chat']['mentor_system_user'];
 $mentor = empty($mentor) ? '' : $mentor;
 
-$clientIp = Utils::getClientIp();
+$clientIp = App::getClientIp();
 $allowedIp = explode(',', $config['app_server']['allowed_ip']);
 
 try {
@@ -63,7 +65,7 @@ try {
         'usage_percent' => ceil($diskParts[0][3]),
     ];
 
-    $input = [
+    $data = [
         "PLATFORM" => $requestContent['PLATFORM'],
         "INSTANCE_ID" => $requestContent['INSTANCE_ID'],
         "PUBLIC_IP" => $requestContent['PUBLIC_IP'],
@@ -75,99 +77,26 @@ try {
         "VERIFY_CODE" => $verifyCode,
     ];
 
-    if (!file_exists($databaseFile)) {
-        file_put_contents($databaseFile, '');
-        $db = new PDO('sqlite:' . $databaseFile);
-        $tableSql = "
-            CREATE TABLE servers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                server_name TEXT(64),
-                instance_id TEXT(64),
-                public_ip TEXT(64),
-                platform TEXT(16),
-                username TEXT(16),
-                is_production INTEGER DEFAULT (1),
-                cpu INTEGER DEFAULT (0),
-                ram INTEGER DEFAULT (0),
-                disk INTEGER DEFAULT (0),
-                enabled_alert INTEGER DEFAULT (1),
-                input_history TEXT,
-                input_raw TEXT, 
-                created_at TEXT(20), 
-                updated_at TEXT(20)
-            );
+    $keyCache = "{$requestContent['PLATFORM']}_{$requestContent['PUBLIC_IP']}";
+    $cacheObj = new Cache("servers/{$keyCache}.json");
 
-            CREATE INDEX servers_public_ip_platform_idx ON servers (public_ip,platform);
-            CREATE INDEX servers_server_name_idx ON servers (server_name);
-            CREATE INDEX servers_public_ip_idx ON servers (public_ip);
-            CREATE INDEX servers_cpu_idx ON servers (cpu);
-            CREATE INDEX servers_ram_idx ON servers (ram);
-            CREATE INDEX servers_disk_idx ON servers (disk);
-            CREATE INDEX servers_updated_at_idx ON servers (updated_at);
-        ";
-        $db->exec($tableSql);
-    } else {
-        $db = new PDO('sqlite:' . $databaseFile);
-    }
+    $dataCache = $cacheObj->get($keyCache);
 
-    $selectSql = "SELECT * FROM servers WHERE platform = :platform AND public_ip = :public_ip LIMIT 1";
-    $selectStmt = $db->prepare($selectSql);
-    $selectStmt->bindParam(':platform', $requestContent['PLATFORM'], PDO::PARAM_STR);
-    $selectStmt->bindParam(':public_ip', $requestContent['PUBLIC_IP'], PDO::PARAM_STR);
-    $selectStmt->execute();
-    $row = $selectStmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($row) {
-        $sql = "";
-        $sql .= "UPDATE servers SET username = :username, instance_id = :instance_id, cpu = :cpu, ram = :ram, disk = :disk, input_raw = :input_raw, input_history = :input_history, updated_at = :updated_at";
-        $sql .= " WHERE platform = :platform AND public_ip = :public_ip";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':instance_id', $requestContent['INSTANCE_ID'], PDO::PARAM_STR);
-        $inputHistoryOld = json_decode($row['input_history'], true);
-
+    $inputHistory = [];
+    if ($dataCache) {
+        $inputHistory = $dataCache['INPUT_HISTORY'];
         // Add the new input to the history
-        array_unshift($inputHistoryOld, $input);
-
+        array_unshift($inputHistory, $data);
         // Only keep the last 5 inputs
-        $inputHistoryOld = array_slice($inputHistoryOld, 0, 5);
-
-        $inputHistory = json_encode($inputHistoryOld);
-
-        $stmt->bindParam(':username', $requestContent['USERNAME'], PDO::PARAM_STR);
-        $stmt->bindParam(':instance_id', $requestContent['INSTANCE_ID'], PDO::PARAM_STR);
-        $stmt->bindParam(':public_ip', $requestContent['PUBLIC_IP'], PDO::PARAM_STR);
-        $stmt->bindParam(':platform', $requestContent['PLATFORM'], PDO::PARAM_STR);
-        $stmt->bindParam(':cpu',  $cpuDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':ram',  $ramDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':disk',  $diskDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':input_raw',  $inputRaw, PDO::PARAM_STR);
-        $stmt->bindParam(':input_history', $inputHistory, PDO::PARAM_STR);
-        $stmt->bindParam(':updated_at',  date('Y-m-d H:i:s'), PDO::PARAM_STR);
-    } else {
-        $sql = "";
-        $sql .= "INSERT INTO servers (instance_id, public_ip, username, platform, cpu, ram, disk, input_raw, input_history, created_at, updated_at)";
-        $sql .= " VALUES (:instance_id, :public_ip, :username, :platform, :cpu, :ram, :disk, :input_raw, :input_history, :created_at, :updated_at)";
-        $stmt = $db->prepare($sql);
-
-        $inputHistory = json_encode([$input]);
-
-        $stmt->bindParam(':username', $requestContent['USERNAME'], PDO::PARAM_STR);
-        $stmt->bindParam(':instance_id', $requestContent['INSTANCE_ID'], PDO::PARAM_STR);
-        $stmt->bindParam(':public_ip', $requestContent['PUBLIC_IP'], PDO::PARAM_STR);
-        $stmt->bindParam(':platform', $requestContent['PLATFORM'], PDO::PARAM_STR);
-        $stmt->bindParam(':cpu',  $cpuDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':ram',  $ramDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':disk',  $diskDetails['usage_percent'], PDO::PARAM_INT);
-        $stmt->bindParam(':input_raw',  $inputRaw, PDO::PARAM_STR);
-        $stmt->bindParam(':input_history',  $inputHistory, PDO::PARAM_STR);
-        $stmt->bindParam(':created_at',  date('Y-m-d H:i:s'), PDO::PARAM_STR);
-        $stmt->bindParam(':updated_at',  date('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $inputHistory = array_slice($inputHistory, 0, 5);
     }
 
-    $stmt->execute();
+    $data['INPUT_RAW'] = $inputRaw;
+    $data['INPUT_HISTORY'] = $inputHistory;
+
+    $cacheObj->set($keyCache, $data);
 
     echo $inputRaw;
-
 } catch (\Exception $e) {
     $message = "{$mentor}\n```ERROR: [File: {$e->getFile()}] [Line: {$e->getLine()}] {$e->getMessage()} \n{$inputRaw}```";
     echo $message;

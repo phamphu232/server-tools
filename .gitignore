@@ -1,6 +1,11 @@
 /vendor/
 env.ini
 
+!.gitignore
+
+/cache/servers/*
+!/cache/servers/.gitignore
+
 !/logs/.gitkeep
 /logs/*.log
 composer.lock

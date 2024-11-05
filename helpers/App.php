@@ -2,7 +2,7 @@
 
 namespace helpers;
 
-class Utils
+class App
 {
     public static function getClientIp()
     {
