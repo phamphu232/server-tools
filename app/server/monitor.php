@@ -9,6 +9,12 @@ use helpers\GoogleChat;
 
 $config = Config::get();
 
+function convertKBtoGB($kilobytes)
+{
+    $gigabytes = $kilobytes / (1024 * 1024);
+    return number_format($gigabytes, 2);
+}
+
 try {
     $clientIp = App::getClientIp();
     $allowedIp = explode(',', $config['app_server']['allowed_ip']);
@@ -58,8 +64,8 @@ try {
         $tr .= "<td><a href=\"#{$linkCloud}\">{$jsonData['INSTANCE_ID']}</a></td>";
         $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
         $tr .= "<td>{$jsonData['CPU']['usage_percent']}%</td>";
-        $tr .= "<td>{$jsonData['RAM']['usage_percent']}%</td>";
-        $tr .= "<td>{$jsonData['DISK']['usage_percent']}%</td>";
+        $tr .= "<td>{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
+        $tr .= "<td>{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
         $tr .= "<td>{$updatedAt}</td>";
         $tr .= "</tr>";
     }
