@@ -47,21 +47,21 @@ try {
     $ramParts = [];
     preg_match_all('/\W\d+/', $requestContent['RAM'], $ramParts);
     $ramDetails = [
-        'total' => $ramParts[0][0],
-        'used' => $ramParts[0][1],
-        'free' => $ramParts[0][2],
-        'shared' => $ramParts[0][3],
-        'buff/cache' => $ramParts[0][4],
-        'available' => $ramParts[0][5],
+        'total' => trim($ramParts[0][0]),
+        'used' => trim($ramParts[0][1]),
+        'free' => trim($ramParts[0][2]),
+        'shared' => trim($ramParts[0][3]),
+        'buff/cache' => trim($ramParts[0][4]),
+        'available' => trim($ramParts[0][5]),
     ];
     $ramDetails['usage_percent'] = ceil(($ramDetails['used'] / $ramDetails['total']) * 100);
 
     $diskParts = [];
     preg_match_all('/\W\d+/', $requestContent['DISK'], $diskParts);
     $diskDetails = [
-        'total' => $diskParts[0][0],
-        'used' => $diskParts[0][1],
-        'free' => $diskParts[0][2],
+        'total' => trim($diskParts[0][0]),
+        'used' => trim($diskParts[0][1]),
+        'free' => trim($diskParts[0][2]),
         'usage_percent' => ceil($diskParts[0][3]),
     ];
 
