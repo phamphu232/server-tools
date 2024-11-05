@@ -50,14 +50,17 @@ try {
         }
 
         $no = $i + 1;
+        $updatedAt = date('Y-m-d H:i:s', $jsonData['TIMESTAMP']);
+
         $tr .= "<tr>";
         $tr .= "<td align=\"center\">{$no}</td>";
         $tr .= "<td>{$jsonData['PLATFORM']}</td>";
-        $tr .= "<td><a href=\"{$linkCloud}\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
+        $tr .= "<td><a href=\"#{$linkCloud}\">{$jsonData['INSTANCE_ID']}</a></td>";
         $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
         $tr .= "<td>{$jsonData['CPU']['usage_percent']}%</td>";
         $tr .= "<td>{$jsonData['RAM']['usage_percent']}%</td>";
         $tr .= "<td>{$jsonData['DISK']['usage_percent']}%</td>";
+        $tr .= "<td>{$updatedAt}</td>";
         $tr .= "</tr>";
     }
 
@@ -71,6 +74,7 @@ try {
     <th>CPU</th>
     <th>RAM</th>
     <th>DISK</th>
+    <th>UPDATE_AT</th>
     </tr>
     </thead>
     <tbody>
