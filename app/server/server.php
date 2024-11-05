@@ -169,7 +169,7 @@ try {
     echo $inputRaw;
 
 } catch (\Exception $e) {
-    $message = "{$mentor}\n```ERROR: [File: {$e->getFile()}] [Line: {$e->getLine()}] {$e->getMessage()}```";
+    $message = "{$mentor}\n```ERROR: [File: {$e->getFile()}] [Line: {$e->getLine()}] {$e->getMessage()} \n{$inputRaw}```";
     echo $message;
     GoogleChat::send($message, $config['google_chat']['webhook_system_team']);
 }
