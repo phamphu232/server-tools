@@ -38,7 +38,7 @@ try {
     }
 
     $cpuParts = [];
-    preg_match_all('/(\d+\.\d+)%([a-z]+)/', $requestContent['CPU'], $cpuParts);
+    preg_match_all('/(\d+\.\d+)(\W|%)([a-zA-Z]+)/', $requestContent['CPU'], $cpuParts);
     $cpuDetails = array_combine($cpuParts[2], $cpuParts[1]);
     $cpuDetails['usage_percent'] = ceil($cpuDetails['us'] + $cpuDetails['sy']);
 
