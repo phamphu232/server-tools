@@ -15,7 +15,8 @@ if curl -s --max-time 2 http://metadata.google.internal/computeMetadata/v1/insta
     PLATFORM="GCP"
     INSTANCE_NAME=$(curl -s --max-time 2 http://metadata.google.internal/computeMetadata/v1/instance/name -H "Metadata-Flavor: Google")
     PROJECT_ID=$(curl -s --max-time 2 http://metadata.google.internal/computeMetadata/v1/project/project-id -H "Metadata-Flavor: Google")
-    INSTANCE_ID="${INSTANCE_NAME}?project=${PROJECT_ID}"
+    # INSTANCE_ID="${INSTANCE_NAME}?project=${PROJECT_ID}"
+    INSTANCE_ID="${PROJECT_ID}"
     PUBLIC_IP=$(curl -s --max-time 2 http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip -H "Metadata-Flavor: Google")
 fi
 
