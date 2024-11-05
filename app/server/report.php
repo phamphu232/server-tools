@@ -1,68 +1,85 @@
 <?php
+require_once __DIR__ . '/../../helpers/App.php';
 require_once __DIR__ . '/../../helpers/Config.php';
 require_once __DIR__ . '/../../helpers/GoogleChat.php';
 require_once __DIR__ . '/../../helpers/Skype.php';
 
+use helpers\App;
 use helpers\Config;
 use helpers\GoogleChat;
 use helpers\Skype;
 
 $config = Config::get();
 
+function convertKBtoGB($kilobytes)
+{
+    $gigabytes = $kilobytes / (1024 * 1024);
+    return number_format($gigabytes, 2);
+}
+
 try {
-    $databaseFile = __DIR__ . '/../../database.sqlite';
-    if (!file_exists($databaseFile)) {
-        throw new \Exception("Database file not found: {$databaseFile}");
+    $clientIp = App::getClientIp();
+    $allowedIp = explode(',', $config['app_server']['allowed_ip']);
+
+    if (!in_array($clientIp, $allowedIp)) {
+        echo "Your ip: {$clientIp} is not allowed";
+        exit();
     }
 
-    $db = new PDO('sqlite:' . $databaseFile);
-
-    $sql = "SELECT * FROM servers";
-    $stmt = $db->prepare($sql);
-    $stmt->execute();
-
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $directory = "{$config['BASE_DIR']}/cache/servers/";
+    $jsonFiles = glob($directory . '*.json');
 
     $CPULimit = 95;
     $RAMLimit = 95;
     $DISKLimit = 95;
 
     $arrWarning = [];
-    foreach ($rows as $row) {
-        if (empty($row['enabled_alert'])) {
+    foreach ($jsonFiles as $i => $file) {
+        $jsonData = file_get_contents($file);
+        if (empty($jsonData)) {
             continue;
         }
 
-        if (strtotime($row['updated_at']) < strtotime('-5 minutes')) {
-            $row['is_missing_report'] = true;
-            $arrWarning[] = $row;
+        $fileName = pathinfo($file, PATHINFO_FILENAME);
+
+        $jsonData = json_decode($jsonData, true);
+
+        if (empty($jsonData[$fileName])) {
             continue;
         }
 
-        if (intval($row['disk']) > $DISKLimit) {
-            $row['is_high_disk'] = true;
-            $arrWarning[] = $row;
+        $jsonData = $jsonData[$fileName];
+
+        if ($jsonData['TIMESTAMP'] < strtotime('-5 minutes')) {
+            $jsonData['is_missing_report'] = true;
+            $arrWarning[] = $jsonData;
+            continue;
         }
 
-        $inputHistory = json_decode($row['input_history'], true);
+        if (intval($jsonData['DISK']['usage_percent']) > $DISKLimit) {
+            $jsonData['is_high_disk'] = true;
+            $arrWarning[] = $jsonData;
+        }
+
+        $inputHistory = $jsonData['INPUT_HISTORY'];
         if (count($inputHistory) == 5) {
-            $row['is_high_cpu'] = true;
-            $row['is_high_ram'] = true;
+            $jsonData['is_high_cpu'] = true;
+            $jsonData['is_high_ram'] = true;
             foreach ($inputHistory as $input) {
                 if (intval($input['CPU']['usage_percent']) < $CPULimit) {
-                    $row['is_high_cpu'] = false;
+                    $jsonData['is_high_cpu'] = false;
                 }
                 if (intval($input['RAM']['usage_percent']) < $RAMLimit) {
-                    $row['is_high_ram'] = false;
+                    $jsonData['is_high_ram'] = false;
                 }
             }
 
-            if (!empty($row['is_high_cpu'])) {
-                $arrWarning[] = $row;
+            if (!empty($jsonData['is_high_cpu'])) {
+                $arrWarning[] = $jsonData;
             }
 
-            if (!empty($row['is_high_ram'])) {
-                $arrWarning[] = $row;
+            if (!empty($jsonData['is_high_ram'])) {
+                $arrWarning[] = $jsonData;
             }
         }
     }
@@ -74,16 +91,17 @@ try {
     $message = "";
     foreach ($arrWarning as $server) {
         $linkCloud = "";
-        if (strtolower($server['platform']) == 'aws') {
-            $linkCloud = "https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#InstanceDetails:instanceId={$server['instance_id']}";
-        } else if (strtolower($server['platform']) == 'gcp') {
-            $linkCloud = "https://console.cloud.google.com/compute/instancesDetail/zones/asia-northeast2-a/instances/{$server['instance_id']}&authuser=1";
+        if (strtolower($server['PLATFORM']) == 'aws') {
+            // $linkCloud = "https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#InstanceDetails:instanceId={$server['instance_id']}";
+        } else if (strtolower($server['PLATFORM']) == 'gcp') {
+            // $linkCloud = "https://console.cloud.google.com/compute/instancesDetail/zones/asia-northeast2-a/instances/{$server['instance_id']}&authuser=1";
         }
-        $missingReport = !empty($server['is_missing_report']) ? "[Missing Report From: {$server['updated_at']}]" : '';
-        $heightCPU = !empty($server['is_high_cpu']) ? "[High CPU: {$server['cpu']}%]" : '';
-        $heightRAM = !empty($server['is_high_ram']) ? "[High RAM: {$server['ram']}%]" : '';
-        $heightDisk = !empty($server['is_high_disk']) ? "[High Disk: {$server['disk']}%]" : '';
-        $message .= "Platform: <a href=\"{$linkCloud}\">{$server['platform']}</a> | Server: {$server['server_name']} | Public IP: <a href=\"https://ipinfo.io/{$server['public_ip']}/json\">{$server['public_ip']}</a> | Updated: {$server['updated_at']}<br/>";
+        $updatedAt = date('Y-m-d H:i:s', $server['TIMESTAMP']);
+        $missingReport = !empty($server['is_missing_report']) ? "[Missing Report From: {$updatedAt}]" : '';
+        $heightCPU = !empty($server['is_high_cpu']) ? "[High CPU: {$server['CPU']['usage_percent']}%]" : '';
+        $heightRAM = !empty($server['is_high_ram']) ? "[High RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]" : '';
+        $heightDisk = !empty($server['is_high_disk']) ? "[High Disk: {$server['DISK']['usage_percent']}% ~ " . convertKBtoGB($server['DISK']['used']) . "GB / " . convertKBtoGB($server['DISK']['total']) . "GB]" : '';
+        $message .= "Platform: <a href=\"{$linkCloud}\">{$server['PLATFORM']}</a> | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Updated: {$updatedAt}<br/>";
         $message .= " => <b>{$missingReport} {$heightCPU} {$heightRAM} {$heightDisk}</b><br/><br/>";
     }
 
