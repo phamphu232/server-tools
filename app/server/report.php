@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../bootstrap/bootstrap.php';
+
 require_once __DIR__ . '/../../helpers/App.php';
 require_once __DIR__ . '/../../helpers/Config.php';
 require_once __DIR__ . '/../../helpers/GoogleChat.php';
