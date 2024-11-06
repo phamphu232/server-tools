@@ -73,8 +73,8 @@ try {
     }
 
     echo "
-        <div style=\"max-width: 1000px; margin: auto;\">
-        <div style=\"text-align: center;\"><h1>Server Monitor</h1></div>
+        <div style=\"max-width: 1200px; margin: auto;\">
+        <div style=\"text-align: left;\"><h1>Server Monitor</h1></div>
         <div style=\"text-align: right; font-weight: bold; margin-bottom: 5px;\"><label><input type=\"checkbox\" value=\"1\" id=\"auto_refresh\" checked>Auto Refresh</label></div>
         <table border=\"1\" cellpadding=\"5\" cellspacing=\"0\" style=\"width:100%; margin:auto;\">
         <thead>
