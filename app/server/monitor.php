@@ -72,23 +72,29 @@ try {
         $tr .= "</tr>";
     }
 
-    echo "<table border=\"1\" cellpadding=\"5\" cellspacing=\"0\" style=\"margin:auto;\">
-    <thead>
-    <tr>
-    <th>No</th>
-    <th>PLATFORM</th>
-    <th>INSTANCE_ID</th>
-    <th>PUBLIC_IP</th>
-    <th>CPU</th>
-    <th>RAM</th>
-    <th>DISK</th>
-    <th>UPDATE_AT</th>
-    </tr>
-    </thead>
-    <tbody>
-    {$tr}
-    </tbody>
-    </table>";
+    echo "
+        <div style=\"max-width: 1000px; margin: auto;\">
+        <div style=\"text-align: center;\"><h1>Server Monitor</h1></div>
+        <div style=\"text-align: right; font-weight: bold; margin-bottom: 5px;\"><label><input type=\"checkbox\" value=\"1\" id=\"auto_refresh\" checked>Auto Refresh</label></div>
+        <table border=\"1\" cellpadding=\"5\" cellspacing=\"0\" style=\"width:100%; margin:auto;\">
+        <thead>
+        <tr>
+        <th>No</th>
+        <th>PLATFORM</th>
+        <th>INSTANCE_ID</th>
+        <th>PUBLIC_IP</th>
+        <th>CPU</th>
+        <th>RAM</th>
+        <th>DISK</th>
+        <th>UPDATE_AT</th>
+        </tr>
+        </thead>
+        <tbody>
+        {$tr}
+        </tbody>
+        </table>
+        </div>
+    ";
 } catch (\Exception $e) {
     $mentor = $config['google_chat']['mentor_system_user'];
     $mentor = empty($mentor) ? '' : $mentor;
@@ -96,3 +102,32 @@ try {
     echo $message;
     GoogleChat::send($message, $config['google_chat']['webhook_system_team']);
 }
+
+?>
+
+<script>
+    // Select the checkbox element
+const checkbox = document.getElementById("auto_refresh");
+
+// Function to reload the page every minute
+function reloadPageEveryMinute() {
+  setInterval(() => {
+    if (checkbox.checked) {
+      location.reload();
+    }
+  }, 30000); // 60000 milliseconds = 1 minute
+}
+
+// Run the function when the checkbox state changes or if it's already checked
+checkbox.addEventListener("change", () => {
+  if (checkbox.checked) {
+    reloadPageEveryMinute();
+  }
+});
+
+// Start reloading automatically if checkbox is checked by default
+if (checkbox.checked) {
+  reloadPageEveryMinute();
+}
+
+</script>
