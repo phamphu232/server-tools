@@ -62,6 +62,8 @@ try {
 
         $tr .= "<tr>";
         $tr .= "<td align=\"center\">{$no}</td>";
+        $tr .= "<td align=\"center\"><input type=\"checkbox\" class=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"is_alert\"></td>";
+        $tr .= "<td align=\"left\" contenteditable=\"true\" class=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"server_name\"></td>";
         $tr .= "<td>{$jsonData['PLATFORM']}</td>";
         $tr .= "<td><a href=\"#{$linkCloud}\">{$jsonData['INSTANCE_ID']}</a></td>";
         $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
@@ -80,6 +82,8 @@ try {
         <thead>
         <tr>
         <th>No</th>
+        <th>Alert</th>
+        <th>SERVER NAME</th>
         <th>PLATFORM</th>
         <th>INSTANCE_ID</th>
         <th>PUBLIC_IP</th>
@@ -129,5 +133,39 @@ checkbox.addEventListener("change", () => {
 if (checkbox.checked) {
   reloadPageEveryMinute();
 }
+
+
+const currentPath = window.location.pathname;
+// Select all elements with the class 'server-name'
+const editableElements = document.querySelectorAll('.server-name');
+
+// Attach an event listener to each editable element
+editableElements.forEach(element => {
+  element.contentEditable = "true"; // Make the element editable
+  element.addEventListener('input', () => {
+    // Triggered whenever the content is modified
+    const newContent = element.textContent;
+
+    // Send a POST request to the current path
+    fetch(currentPath, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: "UpdateServerName",
+        dataKey: element.dataset.key,
+        serverName: newContent
+      }) // Send the new content
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Response:', data); // Log the server's response
+    })
+    .catch(error => {
+      console.error('Error:', error); // Log any error
+    });
+  });
+});
 
 </script>
