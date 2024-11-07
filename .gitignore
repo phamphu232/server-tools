@@ -6,6 +6,9 @@ env.ini
 /cache/servers/*
 !/cache/servers/.gitignore
 
+/cache/config/*
+!/cache/config/.gitignore
+
 !/logs/.gitkeep
 /logs/*.log
 composer.lock

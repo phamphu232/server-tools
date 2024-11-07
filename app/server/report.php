@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../../bootstrap/bootstrap.php';
 
 require_once __DIR__ . '/../../helpers/App.php';
+require_once __DIR__ . '/../../helpers/Cache.php';
 require_once __DIR__ . '/../../helpers/Config.php';
 require_once __DIR__ . '/../../helpers/GoogleChat.php';
 require_once __DIR__ . '/../../helpers/Skype.php';
 
 use helpers\App;
+use helpers\Cache;
 use helpers\Config;
 use helpers\GoogleChat;
 use helpers\Skype;
@@ -35,6 +37,11 @@ try {
     $RAMLimit = 95;
     $DISKLimit = 95;
 
+    $arrServerConfig = [];
+    if (file_exists($config['BASE_DIR'] . '/cache/config/servers.json')) {
+        $arrServerConfig = json_decode(file_get_contents($config['BASE_DIR'] . '/cache/config/servers.json'), true);
+    }
+
     $arrWarning = [];
     foreach ($jsonFiles as $i => $file) {
         $jsonData = file_get_contents($file);
@@ -52,27 +59,46 @@ try {
 
         $jsonData = $jsonData[$fileName];
 
-        if ($jsonData['TIMESTAMP'] < strtotime('-5 minutes')) {
+        if (!empty($arrServerConfig[$fileName])) {
+            $jsonData = array_merge($jsonData, $arrServerConfig[$fileName]);
+        }
+
+        if ($jsonData['TIMESTAMP'] < strtotime('-3 minutes')) {
             $jsonData['is_missing_report'] = true;
             $arrWarning[] = $jsonData;
             continue;
         }
 
-        if (intval($jsonData['DISK']['usage_percent']) > $DISKLimit) {
-            $jsonData['is_high_disk'] = true;
+        $CPULimit = 0;
+        if (!empty($jsonData['CPU_THROTTLE'])) {
+            $CPULimit = $jsonData['CPU_THROTTLE'];
+        }
+
+        $RAMLimit = 0;
+        if (!empty($jsonData['RAM_THROTTLE'])) {
+            $RAMLimit = $jsonData['RAM_THROTTLE'];
+        }
+
+        $DISKLimit = 0;
+        if (!empty($jsonData['DISK_THROTTLE'])) {
+            $DISKLimit = $jsonData['DISK_THROTTLE'];
+        }
+
+        if (intval($jsonData['DISK']['usage_percent']) > $DISKLimit && $DISKLimit > 0) {
+            $jsonData['is_full_disk'] = true;
             $arrWarning[] = $jsonData;
         }
 
         $inputHistory = $jsonData['INPUT_HISTORY'];
-        if (count($inputHistory) == 5) {
+        if (count($inputHistory) >= 5) {
             $jsonData['is_high_cpu'] = true;
-            $jsonData['is_high_ram'] = true;
+            $jsonData['is_full_ram'] = true;
             foreach ($inputHistory as $input) {
-                if (intval($input['CPU']['usage_percent']) < $CPULimit) {
+                if (intval($input['CPU']['usage_percent']) < $CPULimit && $CPULimit > 0) {
                     $jsonData['is_high_cpu'] = false;
                 }
-                if (intval($input['RAM']['usage_percent']) < $RAMLimit) {
-                    $jsonData['is_high_ram'] = false;
+                if (intval($input['RAM']['usage_percent']) < $RAMLimit && $RAMLimit > 0) {
+                    $jsonData['is_full_ram'] = false;
                 }
             }
 
@@ -80,15 +106,19 @@ try {
                 $arrWarning[] = $jsonData;
             }
 
-            if (!empty($jsonData['is_high_ram'])) {
+            if (!empty($jsonData['is_full_ram'])) {
                 $arrWarning[] = $jsonData;
             }
         }
     }
 
     if (empty($arrWarning)) {
+        echo "Everything is fine.";
         return;
     }
+
+    $cacheObj = new Cache("config/servers.json");
+    $nowTime = date('Y-m-d H:i:s');
 
     $message = "";
     foreach ($arrWarning as $server) {
@@ -98,22 +128,63 @@ try {
         } else if (strtolower($server['PLATFORM']) == 'gcp') {
             // $linkCloud = "https://console.cloud.google.com/compute/instancesDetail/zones/asia-northeast2-a/instances/{$server['instance_id']}&authuser=1";
         }
+
+        $keyCache = "{$server['PLATFORM']}_{$server['PUBLIC_IP']}";
+        $arrServerConfig[$keyCache] = !empty($arrServerConfig[$keyCache]) ? $arrServerConfig[$keyCache] : [];
+
         $updatedAt = date('Y-m-d H:i:s', $server['TIMESTAMP']);
-        $missingReport = !empty($server['is_missing_report']) ? "[Missing Report From: {$updatedAt}]" : '';
-        $heightCPU = !empty($server['is_high_cpu']) ? "[High CPU: {$server['CPU']['usage_percent']}%]" : '';
-        $heightRAM = !empty($server['is_high_ram']) ? "[High RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]" : '';
-        $heightDisk = !empty($server['is_high_disk']) ? "[High Disk: {$server['DISK']['usage_percent']}% ~ " . convertKBtoGB($server['DISK']['used']) . "GB / " . convertKBtoGB($server['DISK']['total']) . "GB]" : '';
-        $message .= "Platform: <a href=\"{$linkCloud}\">{$server['PLATFORM']}</a> | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Updated: {$updatedAt}<br/>";
-        $message .= " => <b>{$missingReport} {$heightCPU} {$heightRAM} {$heightDisk}</b><br/><br/>";
+        $missingReport = '';
+        if (
+            !empty($server['is_missing_report']) && (
+                empty($arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT']) ||
+                strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT']) > 15 * 60
+            )
+        ) {
+            $missingReport = "[Missing Report From: {$updatedAt}]";
+            $arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT'] = $nowTime;
+        }
+
+        $heightCPU = '';
+        if (!empty($server['is_high_cpu'])) {
+            $heightCPU = "[High CPU: {$server['CPU']['usage_percent']}%]";
+            $arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU'] = $nowTime;
+        }
+
+        $fullRAM = '';
+        if (!empty($server['is_full_ram'])) {
+            $fullRAM = "[Full RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]";
+            $arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM'] = $nowTime;
+        }
+
+        $fullDisk = '';
+        if (
+            !empty($server['is_full_disk']) && (
+                empty($arrServerConfig[$keyCache]['LAST_ALERT_FULL_DISK']) ||
+                strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_FULL_DISK']) > 2 * 60 * 60
+            )
+        ) {
+            $fullDisk = "[Full Disk: {$server['DISK']['usage_percent']}% ~ " . convertKBtoGB($server['DISK']['used']) . "GB / " . convertKBtoGB($server['DISK']['total']) . "GB]";
+            $arrServerConfig[$keyCache]['LAST_ALERT_FULL_DISK'] = $nowTime;
+        }
+
+        if (!empty($missingReport) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
+            $cacheObj->set($keyCache, $arrServerConfig[$keyCache]);
+
+            $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$linkCloud}\">{$server['PLATFORM']}</a><br/>";
+            $message .= " => <b>{$missingReport} {$heightCPU} {$fullRAM} {$fullDisk}</b><br/><br/>";
+        }
     }
 
-    if (!empty($config['skype']['mentor'])) {
+    if (!empty($message) && !empty($config['skype']['mentor'])) {
         $message = "{$config['skype']['mentor']} <b>Server Warnings</b><br/>" . $message;
     }
 
-    echo $message;
-
-    Skype::send($message, $config['skype']['recipient'], $config['skype']['endpoint'], $config['skype']['username'], $config['skype']['password']);
+    if (!empty($message)) {
+        echo $message;
+        Skype::send($message, $config['skype']['recipient'], $config['skype']['endpoint'], $config['skype']['username'], $config['skype']['password']);
+    } else {
+        echo "Everything is okay.";
+    }
 } catch (\Exception $e) {
     $mentor = $config['google_chat']['mentor_system_user'];
     $mentor = empty($mentor) ? '' : $mentor;
