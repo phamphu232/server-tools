@@ -78,12 +78,12 @@ try {
     $tr .= "<td>{$jsonData['PLATFORM']}</td>";
     $tr .= "<td><a href=\"#{$linkCloud}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
     $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
-    $tr .= "<td align=\"right\">{$jsonData['CPU']['usage_percent']}%</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
-    $tr .= "<td align=\"right\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
-    $tr .= "<td align=\"right\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" ><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td align=\"left\">{$jsonData['CPU']['usage_percent']}%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td align=\"left\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td align=\"left\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
     $tr .= "<td align=\"right\" class=\"nowrap\">{$updatedAt}</td>";
     $tr .= "</tr>";
   }
@@ -155,7 +155,7 @@ try {
   }
 
   .warning {
-    color: #FF5722;
+    color: #ccc;
   }
 </style>
 
