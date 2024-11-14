@@ -164,7 +164,7 @@ try {
         if (!empty($server['is_high_cpu'])) {
             $heightCPU = "[High CPU: {$server['CPU']['usage_percent']}%]";
             $arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU'] = $nowTime;
-            $messageTitle['full_ram'] = '[High CPU]';
+            $messageTitle['high_cpu'] = '[High CPU]';
         }
 
         $fullRAM = '';
@@ -183,6 +183,7 @@ try {
         ) {
             $fullDisk = "[Full Disk: {$server['DISK']['usage_percent']}% ~ " . convertKBtoGB($server['DISK']['used']) . "GB / " . convertKBtoGB($server['DISK']['total']) . "GB]";
             $arrServerConfig[$keyCache]['LAST_ALERT_FULL_DISK'] = $nowTime;
+            $messageTitle['full_disk'] = '[Full Disk]';
         }
 
         if (!empty($missingReport) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
@@ -208,7 +209,7 @@ try {
 
     if (!empty($message)) {
         $messageTitle = implode(' | ', $messageTitle);
-        $signature = "<i>- Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -</i>";
+        $signature = "_Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a>_";
         $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}<br><br/>{$signature}";
     }
 
