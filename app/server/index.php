@@ -21,7 +21,7 @@ try {
   $clientIp = App::getClientIp();
   $allowedIp = explode(',', $config['app_server']['allowed_ip']);
 
-  if (!in_array($clientIp, $allowedIp)) {
+  if (php_sapi_name() !== 'cli' && !in_array($clientIp, $allowedIp)) {
     echo "Your ip: {$clientIp} is not allowed";
     exit();
   }
