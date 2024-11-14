@@ -59,11 +59,11 @@ try {
       $jsonData['DISK_THROTTLE'] = 0;
     }
 
-    $linkCloud = "javascript:;";
+    $cloudLink = "javascript:;";
     if (strtolower($jsonData['PLATFORM']) == 'aws') {
-      $linkCloud = "https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#InstanceDetails:instanceId={$jsonData['INSTANCE_ID']}";
+      $cloudLink = "https://{$jsonData['ZONE_CODE']}.console.aws.amazon.com/ec2/home?region={$jsonData['ZONE_CODE']}#InstanceDetails:instanceId={$jsonData['INSTANCE_ID']}";
     } else if (strtolower($jsonData['PLATFORM']) == 'gcp') {
-      $linkCloud = "https://console.cloud.google.com/compute/instancesDetail/zones/asia-northeast2-a/instances/{$jsonData['INSTANCE_ID']}&authuser=1";
+      $cloudLink = "https://console.cloud.google.com/compute/instancesDetail/zones/{$jsonData['ZONE_CODE']}/instances/{$jsonData['INSTANCE_NAME']}?project={$jsonData['PROJECT_ID']}&authuser=1";
     }
 
     $no = $i + 1;
@@ -73,8 +73,8 @@ try {
     $tr .= "<td align=\"center\">{$no}</td>";
     $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"person_in_charge\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['PERSON_IN_CHARGE']}\" /></td>";
     $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"server_name\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['SERVER_NAME']}\" /></td>";
-    $tr .= "<td>{$jsonData['PLATFORM']}</td>";
-    // $tr .= "<td><a href=\"#{$linkCloud}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
+    $tr .= "<td><a href=\"{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PLATFORM']}</a></td>";
+    // $tr .= "<td><a href=\"#{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
     $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
     $tr .= "<td align=\"left\">{$jsonData['CPU']['usage_percent']}%</td>";
     $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
