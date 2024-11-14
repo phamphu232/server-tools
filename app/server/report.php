@@ -197,11 +197,11 @@ try {
             }
 
             $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$cloudLink}\">{$server['PLATFORM']}</a><br/>";
-            $message .= " => <b>{$missingReport} {$heightCPU} {$fullRAM} {$fullDisk}</b><br/>";
+            $message .= " => <b>{$missingReport}{$heightCPU}{$fullRAM}{$fullDisk}</b><br/>";
 
             $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
             if (!empty($mentors)) {
-                $message .= "{$mentors}<br/>";
+                $message .= " => {$mentors}<br/>";
             }
             $message .= "<br/>";
         }
@@ -209,8 +209,8 @@ try {
 
     if (!empty($message)) {
         $messageTitle = implode(' | ', $messageTitle);
-        $signature = "- Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -";
-        $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}<br><br/>{$signature}";
+        $signature = "<i>- Message sent from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -<i>";
+        $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}{$signature}";
     }
 
     if (!empty($message)) {
