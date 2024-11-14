@@ -71,17 +71,17 @@ try {
 
     $tr .= "<tr>";
     $tr .= "<td align=\"center\">{$no}</td>";
-    $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"person_in_charge\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['PERSON_IN_CHARGE']}\" /></td>";
-    $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"server_name\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['SERVER_NAME']}\" /></td>";
+    $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"person_in_charge\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['PERSON_IN_CHARGE']}\" autocomplete=\"off\" placeholder=\"id1|name1,id2|name2\"/></td>";
+    $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"server_name\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['SERVER_NAME']}\" autocomplete=\"off\" /></td>";
     $tr .= "<td><a href=\"{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PLATFORM']}</a></td>";
     // $tr .= "<td><a href=\"#{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
     $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
     $tr .= "<td align=\"left\">{$jsonData['CPU']['usage_percent']}%</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
     $tr .= "<td align=\"left\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
     $tr .= "<td align=\"left\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
     $tr .= "<td align=\"right\" class=\"nowrap\">{$updatedAt}</td>";
     $tr .= "<td align=\"center\" class=\"nowrap\"><a href=\"javascript:deleteRecord('{$fileName}')\" style=\"color:#F00;\">Delete</a></td>";
     $tr .= "</tr>";

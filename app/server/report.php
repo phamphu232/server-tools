@@ -21,6 +21,26 @@ function convertKBtoGB($kilobytes)
     return number_format($gigabytes, 2);
 }
 
+function extractPersonInChargeSkype($str)
+{
+    if (empty($str)) {
+        return '';
+    }
+
+    $persons = trim($str);
+    $persons = explode(',', $persons);
+    $persons = array_map(function ($person) {
+        return trim($person);
+    }, $persons);
+
+    foreach ($persons as $i => $person) {
+        $person = explode('|', $person);
+        $persons[$i] = "<at id=\"{$person[0]}\">{$person[1]}</at>";
+    }
+
+    return implode(' ', $persons);
+}
+
 try {
     $clientIp = App::getClientIp();
     $allowedIp = explode(',', $config['app_server']['allowed_ip']);
@@ -120,15 +140,10 @@ try {
     $cacheObj = new Cache("config/servers.json");
     $nowTime = date('Y-m-d H:i:s');
 
+    $mentors = [];
+    $messageTitle = [];
     $message = "";
     foreach ($arrWarning as $server) {
-        $linkCloud = "";
-        if (strtolower($server['PLATFORM']) == 'aws') {
-            // $linkCloud = "https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#InstanceDetails:instanceId={$server['instance_id']}";
-        } else if (strtolower($server['PLATFORM']) == 'gcp') {
-            // $linkCloud = "https://console.cloud.google.com/compute/instancesDetail/zones/asia-northeast2-a/instances/{$server['instance_id']}&authuser=1";
-        }
-
         $keyCache = "{$server['PLATFORM']}_{$server['PUBLIC_IP']}";
         $arrServerConfig[$keyCache] = !empty($arrServerConfig[$keyCache]) ? $arrServerConfig[$keyCache] : [];
 
@@ -142,18 +157,21 @@ try {
         ) {
             $missingReport = "[Missing Report From: {$updatedAt}]";
             $arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT'] = $nowTime;
+            $messageTitle['missing_report'] = '[Missing Report]';
         }
 
         $heightCPU = '';
         if (!empty($server['is_high_cpu'])) {
             $heightCPU = "[High CPU: {$server['CPU']['usage_percent']}%]";
             $arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU'] = $nowTime;
+            $messageTitle['full_ram'] = '[High CPU]';
         }
 
         $fullRAM = '';
         if (!empty($server['is_full_ram'])) {
             $fullRAM = "[Full RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]";
             $arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM'] = $nowTime;
+            $messageTitle['full_ram'] = '[Full RAM]';
         }
 
         $fullDisk = '';
@@ -170,13 +188,28 @@ try {
         if (!empty($missingReport) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
             $cacheObj->set($keyCache, $arrServerConfig[$keyCache]);
 
-            $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$linkCloud}\">{$server['PLATFORM']}</a><br/>";
-            $message .= " => <b>{$missingReport} {$heightCPU} {$fullRAM} {$fullDisk}</b><br/><br/>";
+            $cloudLink = "javascript:;";
+            if (strtolower($server['PLATFORM']) == 'aws') {
+                $cloudLink = "https://{$server['ZONE_CODE']}.console.aws.amazon.com/ec2/home?region={$server['ZONE_CODE']}#InstanceDetails:instanceId={$server['INSTANCE_ID']}";
+            } else if (strtolower($server['PLATFORM']) == 'gcp') {
+                $cloudLink = "https://console.cloud.google.com/compute/instancesDetail/zones/{$server['ZONE_CODE']}/instances/{$server['INSTANCE_NAME']}?project={$server['PROJECT_ID']}&authuser=1";
+            }
+
+            $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$cloudLink}\">{$server['PLATFORM']}</a><br/>";
+            $message .= " => <b>{$missingReport} {$heightCPU} {$fullRAM} {$fullDisk}</b><br/>";
+
+            $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
+            if (!empty($mentors)) {
+                $message .= "{$mentors}<br/>";
+            }
+            $message .= "<br/>";
         }
     }
 
-    if (!empty($message) && !empty($config['skype']['mentor'])) {
-        $message = "{$config['skype']['mentor']} <b>Server Warnings</b><br/>" . $message;
+    if (!empty($message)) {
+        $messageTitle = implode(' | ', $messageTitle);
+        $signature = "<i>- Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -</i>";
+        $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}<br><br/>{$signature}";
     }
 
     if (!empty($message)) {
