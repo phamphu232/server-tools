@@ -11,7 +11,7 @@ use helpers\Cache;
 use helpers\Config;
 use helpers\GoogleChat;
 
-$databaseFile = __DIR__ . '/../../database.sqlite';
+// $databaseFile = __DIR__ . '/../../database.sqlite';
 
 $config = Config::get();
 
@@ -35,7 +35,7 @@ try {
     $inputRaw = file_get_contents("php://input");
     $requestContent = json_decode($inputRaw, true);
 
-    $verifyCode = md5("VERIFY_CODE:{$requestContent['TIMESTAMP']}_{$requestContent['INSTANCE_ID']}_{$requestContent['PUBLIC_IP']}");
+    $verifyCode = md5("VERIFY_CODE:{$requestContent['TIMESTAMP']}_{$requestContent['PLATFORM']}_{$requestContent['PUBLIC_IP']}");
     if ($verifyCode != $requestContent['VERIFY_CODE']) {
         throw new Exception('Verify code error');
     }
@@ -68,6 +68,9 @@ try {
 
     $data = [
         "PLATFORM" => $requestContent['PLATFORM'],
+        "ZONE_CODE" => $requestContent['ZONE_CODE'],
+        "INSTANCE_NAME" => $requestContent['INSTANCE_NAME'],
+        "PROJECT_ID" => $requestContent['PROJECT_ID'],
         "INSTANCE_ID" => $requestContent['INSTANCE_ID'],
         "PUBLIC_IP" => $requestContent['PUBLIC_IP'],
         "USERNAME" => $requestContent['USERNAME'],
@@ -96,6 +99,15 @@ try {
     $data['INPUT_HISTORY'] = $inputHistory;
 
     $cacheObj->set($keyCache, $data);
+
+    $cacheConfigObj = new Cache("config/servers.json");
+    if (empty($cacheConfigObj->get($keyCache))) {
+        $cacheConfigObj->set($keyCache, [
+            'CPU_THROTTLE' => 96,
+            'RAM_THROTTLE' => 96,
+            'DISK_THROTTLE' => 96,
+        ]);
+    }
 
     echo $inputRaw;
 } catch (\Exception $e) {

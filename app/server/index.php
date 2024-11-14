@@ -87,7 +87,7 @@ try {
     $tr .= "</tr>";
   }
 
-  if(empty($tr)) {
+  if (empty($tr)) {
     $tr = "<tr><td colspan=\"13\" align=\"center\">No Data</td></tr>";
   }
 
