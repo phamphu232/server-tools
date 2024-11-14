@@ -161,14 +161,24 @@ try {
         }
 
         $heightCPU = '';
-        if (!empty($server['is_high_cpu'])) {
+        if (
+            !empty($server['is_high_cpu']) && (
+                empty($arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU']) ||
+                strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU']) > 5 * 60
+            )
+        ) {
             $heightCPU = "[High CPU: {$server['CPU']['usage_percent']}%]";
             $arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU'] = $nowTime;
             $messageTitle['high_cpu'] = '[High CPU]';
         }
 
         $fullRAM = '';
-        if (!empty($server['is_full_ram'])) {
+        if (
+            !empty($server['is_full_ram']) && (
+                empty($arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM']) ||
+                strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM']) > 5 * 60
+            )
+        ) {
             $fullRAM = "[Full RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]";
             $arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM'] = $nowTime;
             $messageTitle['full_ram'] = '[Full RAM]';
