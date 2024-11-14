@@ -209,7 +209,7 @@ try {
 
     if (!empty($message)) {
         $messageTitle = implode(' | ', $messageTitle);
-        $signature = "_Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a>_";
+        $signature = "- Message from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -";
         $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}<br><br/>{$signature}";
     }
 
