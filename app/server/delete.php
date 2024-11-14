@@ -31,29 +31,25 @@ try {
   $input = file_get_contents("php://input");
   $input = json_decode($input, true);
 
-  $cacheServerDir = "{$config['BASE_DIR']}/cache/servers/";
-  $cacheObj = new Cache("config/servers.json");
-
-  $data = [
-    'PERSON_IN_CHARGE' => trim($input['person_in_charge']),
-    'SERVER_NAME' => trim($input['server_name']),
-    'CPU_THROTTLE' => number_format(floatval("0{$input['cpu_throttle']}"), 0),
-    'RAM_THROTTLE' => number_format(floatval("0{$input['ram_throttle']}"), 0),
-    'DISK_THROTTLE' => number_format(floatval("0{$input['disk_throttle']}"), 0),
-  ];
-
-  $arrServerConfig = [];
-  if (file_exists($config['BASE_DIR'] . '/cache/config/servers.json')) {
-    $arrServerConfig = json_decode(file_get_contents($config['BASE_DIR'] . '/cache/config/servers.json'), true);
+  if (!isset($input['key'])) {
+    echo 'Key not found';
+    exit();
   }
 
-  if (!empty($arrServerConfig[$input['key']])) {
-    $data = array_merge($arrServerConfig[$input['key']], $data);
+  $keyCache = $input['key'];
+  $cacheObj = new Cache("servers/{$keyCache}.json");
+
+  $deleteData = $cacheObj->get($keyCache);
+  if (!$deleteData) {
+    echo 'Key not found';
+    exit();
   }
 
-  $cacheObj->set($input['key'], $data);
+  $cacheObj->set("{$keyCache}_deleted", $deleteData);
+  $cacheObj->set("{$keyCache}", []);
 
-  echo json_encode($data);
+  echo 'OK';
+  exit();
 } catch (\Exception $e) {
   $mentor = $config['google_chat']['mentor_system_user'];
   $mentor = empty($mentor) ? '' : $mentor;

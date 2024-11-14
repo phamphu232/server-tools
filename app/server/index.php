@@ -2,12 +2,10 @@
 require_once __DIR__ . '/../../bootstrap/bootstrap.php';
 
 require_once __DIR__ . '/../../helpers/App.php';
-require_once __DIR__ . '/../../helpers/Cache.php';
 require_once __DIR__ . '/../../helpers/Config.php';
 require_once __DIR__ . '/../../helpers/GoogleChat.php';
 
 use helpers\App;
-use helpers\Cache;
 use helpers\Config;
 use helpers\GoogleChat;
 
@@ -76,16 +74,21 @@ try {
     $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"person_in_charge\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['PERSON_IN_CHARGE']}\" /></td>";
     $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"server_name\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['SERVER_NAME']}\" /></td>";
     $tr .= "<td>{$jsonData['PLATFORM']}</td>";
-    $tr .= "<td><a href=\"#{$linkCloud}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
+    // $tr .= "<td><a href=\"#{$linkCloud}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
     $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
     $tr .= "<td align=\"left\">{$jsonData['CPU']['usage_percent']}%</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
     $tr .= "<td align=\"left\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
     $tr .= "<td align=\"left\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
-    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#ccc;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
+    $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\"/>%</td>";
     $tr .= "<td align=\"right\" class=\"nowrap\">{$updatedAt}</td>";
+    $tr .= "<td align=\"center\" class=\"nowrap\"><a href=\"javascript:deleteRecord('{$fileName}')\" style=\"color:#F00;\">Delete</a></td>";
     $tr .= "</tr>";
+  }
+
+  if(empty($tr)) {
+    $tr = "<tr><td colspan=\"13\" align=\"center\">No Data</td></tr>";
   }
 
   echo "
@@ -96,15 +99,16 @@ try {
         <thead>
         <tr>
         <th>No</th>
-        <th>PERSON IN CHARGE <span style=\"font-weight: normal; color: #ccc;\">(Skype)</span></th>
+        <th>PERSON IN CHARGE <span style=\"font-weight: normal; color: #888;\">(Skype)</span></th>
         <th>SERVER NAME</th>
         <th>PLATFORM</th>
-        <th>INSTANCE_ID</th>
+        <!-- <th>INSTANCE_ID</th>-->
         <th>PUBLIC_IP</th>
-        <th colspan=\"2\">CPU <span style=\"font-weight: normal; color: #ccc;\">| Throttle</span></th>
-        <th colspan=\"2\">RAM <span style=\"font-weight: normal; color: #ccc;\">| Throttle</th>
-        <th colspan=\"2\">DISK <span style=\"font-weight: normal; color: #ccc;\">| Throttle</th>
+        <th colspan=\"2\">CPU <span style=\"font-weight: normal; color: #888;\">| Throttle</span></th>
+        <th colspan=\"2\">RAM <span style=\"font-weight: normal; color: #888;\">| Throttle</th>
+        <th colspan=\"2\">DISK <span style=\"font-weight: normal; color: #888;\">| Throttle</th>
         <th>UPDATE_AT</th>
+        <th>DELETE</th>
         </tr>
         </thead>
         <tbody>
@@ -155,7 +159,7 @@ try {
   }
 
   .warning {
-    color: #ccc;
+    color: #888;
   }
 </style>
 
@@ -221,4 +225,27 @@ try {
       }, 500); // Set the delay (e.g., 500 milliseconds)
     });
   });
+
+  function deleteRecord(key) {
+    if (confirm("Are you sure you want to delete this record ?")) {
+      fetch('./delete.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            key: key,
+            action: "delete"
+          })
+        })
+        .then(response => response.text())
+        .then(data => {
+          console.log('Response:', data); // Log the server's response
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error); // Log any error
+        });
+    }
+  }
 </script>

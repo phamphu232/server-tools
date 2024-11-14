@@ -36,6 +36,18 @@
     fi
 @endtask
 
+@task('deployment_server', ['on' => ['vpn-server']])
+    eval $(ssh-agent -s)
+    ssh-add ~/.ssh/id_rsa
+    export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+    cd /home/ubuntu/docker-dep/www/server-tools
+    git checkout . && git checkout -f main && git pull
+@endtask
+
+@story('deploy_server')
+    deployment_server
+@endstory
+
 @story('deploy_test')
     deployment_testing
 @endstory
@@ -45,6 +57,7 @@
 @endstory
 
 @story('deploy')
+    deployment_server
     deployment_testing
     deployment_production
 @endstory
