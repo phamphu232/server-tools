@@ -120,7 +120,7 @@ try {
         <i> - CPU, RAM: Warning if exceeding throttle for 5 minutes.</i><br/>
         <i> - DISK: Warning if exceeding throttle every 2 hours.</i><br/>
         <i> - MISSING REPORT: Warning every 15 minutes.</i><br/>
-        <i> - Set throttle to 0 to disable warning.</i>
+        <i> - DISABLE WARNING: Set throttle to 0.</i>
         </div>
         </div>
     ";
