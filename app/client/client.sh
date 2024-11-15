@@ -41,13 +41,13 @@ if [ -z "$PLATFORM" ]; then
     PUBLIC_IP=$(curl -4 -s http://ifconfig.me)
 fi
 
-CPU=$(top -bn1 | grep -i "Cpu(s)")
-
 CPU_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')
 
-RAM=$(free -k | grep -i "Mem")
-
 RAM_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head -n 31 | awk '{printf "%s\\n", $0}')
+
+CPU=$(top -bn1 | grep -i "Cpu(s)")
+
+RAM=$(free -k | grep -i "Mem")
 
 DISK=$(df -k | grep -i "/$")
 

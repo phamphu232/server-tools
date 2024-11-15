@@ -173,7 +173,7 @@ try {
 
   .tooltip {
     position: relative;
-    cursor: help;
+    cursor: pointer;
     text-decoration: 1px underline dotted;
   }
 
@@ -187,7 +187,7 @@ try {
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.86);
     color: white;
     padding: 10px;
     border-radius: 5px;
