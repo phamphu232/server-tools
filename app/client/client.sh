@@ -70,9 +70,7 @@ DATA=$(cat <<EOF
     "DISK": "$DISK",
     "USERNAME": "$USERNAME",
     "TIMESTAMP": "$TIMESTAMP",
-    "VERIFY_CODE": "$VERYFY_CODE",
-    "CPU_TOP": "\n$CPU_TOP",
-    "RAM_TOP": "\n$RAM_TOP"
+    "VERIFY_CODE": "$VERYFY_CODE"
 }
 EOF
 )
