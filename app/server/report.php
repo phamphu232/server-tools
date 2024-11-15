@@ -53,10 +53,6 @@ try {
     $directory = "{$config['BASE_DIR']}/cache/servers/";
     $jsonFiles = glob($directory . '*.json');
 
-    $CPULimit = 95;
-    $RAMLimit = 95;
-    $DISKLimit = 95;
-
     $arrServerConfig = [];
     if (file_exists($config['BASE_DIR'] . '/cache/config/servers.json')) {
         $arrServerConfig = json_decode(file_get_contents($config['BASE_DIR'] . '/cache/config/servers.json'), true);
@@ -109,17 +105,30 @@ try {
             $arrWarning[] = $jsonData;
         }
 
+        $timeProcessingLimit = 5;
+
         $inputHistory = $jsonData['INPUT_HISTORY'];
         if (count($inputHistory) >= 5) {
             $jsonData['is_high_cpu'] = true;
             $jsonData['is_full_ram'] = true;
+            $jsonData['is_slow_processing'] = true;
+
             foreach ($inputHistory as $input) {
-                if (intval($input['CPU']['usage_percent']) < $CPULimit && $CPULimit > 0) {
+                if (intval(date('s', strtotime($input['TIMESTAMP']))) <= $timeProcessingLimit) {
+                    $jsonData['is_slow_processing'] = false;
+                }
+
+                if (empty($CPULimit) || intval($input['CPU']['usage_percent']) <= $CPULimit) {
                     $jsonData['is_high_cpu'] = false;
                 }
-                if (intval($input['RAM']['usage_percent']) < $RAMLimit && $RAMLimit > 0) {
+
+                if (empty($RAMLimit) || intval($input['RAM']['usage_percent']) <= $RAMLimit) {
                     $jsonData['is_full_ram'] = false;
                 }
+            }
+
+            if (!empty($jsonData['is_slow_processing'])) {
+                $arrWarning[] = $jsonData;
             }
 
             if (!empty($jsonData['is_high_cpu'])) {
@@ -158,6 +167,18 @@ try {
             $missingReport = "[Missing Report From: {$updatedAt}]";
             $arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT'] = $nowTime;
             $messageTitle['missing_report'] = '[Missing Report]';
+        }
+
+        $slowProcessing = '';
+        if (
+            !empty($server['is_slow_processing']) && (
+                empty($arrServerConfig[$keyCache]['LAST_ALERT_SLOW_PROCESSING']) ||
+                strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_SLOW_PROCESSING']) > 5 * 60
+            )
+        ) {
+            $slowProcessing = "[Slow Processing]";
+            $arrServerConfig[$keyCache]['LAST_ALERT_SLOW_PROCESSING'] = $nowTime;
+            $messageTitle['slow_processing'] = '[Slow Processing]';
         }
 
         $heightCPU = '';
@@ -207,7 +228,7 @@ try {
             }
 
             $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$cloudLink}\">{$server['PLATFORM']}</a><br/>";
-            $message .= " => <b>{$missingReport}{$heightCPU}{$fullRAM}{$fullDisk}</b><br/>";
+            $message .= " => <b>{$missingReport}{$slowProcessing}{$heightCPU}{$fullRAM}{$fullDisk}</b><br/>";
 
             $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
             if (!empty($mentors)) {
@@ -219,7 +240,7 @@ try {
 
     if (!empty($message)) {
         $messageTitle = implode(' | ', $messageTitle);
-        $signature = "<i>- Message sent from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> -<i>";
+        $signature = "<i>- Sent from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> at: " . date('Y-m-d H:i:s') . "(JST) -<i>";
         $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}{$signature}";
     }
 

@@ -104,7 +104,7 @@ try {
     if (empty($cacheConfigObj->get($keyCache))) {
         $cacheConfigObj->set($keyCache, [
             'CPU_THROTTLE' => 96,
-            'RAM_THROTTLE' => 96,
+            'RAM_THROTTLE' => 98,
             'DISK_THROTTLE' => 96,
         ]);
     }

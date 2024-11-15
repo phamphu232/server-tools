@@ -43,7 +43,11 @@ fi
 
 CPU=$(top -bn1 | grep -i "Cpu(s)")
 
+CPU_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head -n 21)
+
 RAM=$(free -k | grep -i "Mem")
+
+RAM_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head -n 21)
 
 DISK=$(df -k | grep -i "/$")
 
@@ -62,7 +66,9 @@ DATA=$(cat <<EOF
     "INSTANCE_ID": "$INSTANCE_ID",
     "PUBLIC_IP": "$PUBLIC_IP",
     "CPU": "$CPU",
+    "CPU_TOP": "$CPU_TOP",
     "RAM": "$RAM",
+    "RAM_TOP": "$RAM_TOP",
     "DISK": "$DISK",
     "USERNAME": "$USERNAME",
     "TIMESTAMP": "$TIMESTAMP",
