@@ -43,11 +43,11 @@ fi
 
 CPU=$(top -bn1 | grep -i "Cpu(s)")
 
-CPU_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head -n 21)
+CPU_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')
 
 RAM=$(free -k | grep -i "Mem")
 
-RAM_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head -n 21)
+RAM_TOP=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head -n 31 | awk '{printf "%s\\n", $0}')
 
 DISK=$(df -k | grep -i "/$")
 
@@ -70,7 +70,9 @@ DATA=$(cat <<EOF
     "DISK": "$DISK",
     "USERNAME": "$USERNAME",
     "TIMESTAMP": "$TIMESTAMP",
-    "VERIFY_CODE": "$VERYFY_CODE"
+    "VERIFY_CODE": "$VERYFY_CODE",
+    "CPU_TOP": "$CPU_TOP",
+    "RAM_TOP": "$RAM_TOP"
 }
 EOF
 )

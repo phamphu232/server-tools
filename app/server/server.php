@@ -95,7 +95,8 @@ try {
         $inputHistory = array_slice($inputHistory, 0, 5);
     }
 
-    $data['INPUT_RAW'] = $inputRaw;
+    $data['CPU_TOP'] = $requestContent['CPU_TOP'];
+    $data['RAM_TOP'] = $requestContent['RAM_TOP'];
     $data['INPUT_HISTORY'] = $inputHistory;
 
     $cacheObj->set($keyCache, $data);

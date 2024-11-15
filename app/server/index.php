@@ -69,6 +69,11 @@ try {
     $no = $i + 1;
     $updatedAt = date('Y-m-d H:i:s', $jsonData['TIMESTAMP']);
 
+    $cpuClass = $jsonData['CPU']['usage_percent'] > $jsonData['CPU_THROTTLE'] ? 'red' : '';
+    $ramClass = $jsonData['RAM']['usage_percent'] > $jsonData['RAM_THROTTLE'] ? 'red' : '';
+    $diskClass = $jsonData['DISK']['usage_percent'] > $jsonData['DISK_THROTTLE'] ? 'red' : '';
+
+
     $tr .= "<tr>";
     $tr .= "<td align=\"center\">{$no}</td>";
     $tr .= "<td align=\"left\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"person_in_charge\" style=\"border:none; width:100%;\" class=\"config\" value=\"{$jsonData['PERSON_IN_CHARGE']}\" autocomplete=\"off\" placeholder=\"id1|name1,id2|name2\"/></td>";
@@ -76,14 +81,14 @@ try {
     $tr .= "<td><a href=\"{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PLATFORM']}</a></td>";
     // $tr .= "<td><a href=\"#{$cloudLink}\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['INSTANCE_ID']}</a></td>";
     $tr .= "<td><a href=\"https://ipinfo.io/{$jsonData['PUBLIC_IP']}/json\" style=\"white-space: nowrap; color: #00F;\" target=\"_blank\">{$jsonData['PUBLIC_IP']}</a></td>";
-    $tr .= "<td align=\"left\">{$jsonData['CPU']['usage_percent']}%</td>";
+    $tr .= "<td align=\"left\"><div class=\"tooltip {$cpuClass}\" data-detail=\"{$jsonData['CPU_TOP']}\">{$jsonData['CPU']['usage_percent']}%</div></td>";
     $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"cpu_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['CPU_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
-    $tr .= "<td align=\"left\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</td>";
+    $tr .= "<td align=\"left\" ><div class=\"tooltip {$ramClass}\" data-detail=\"{$jsonData['RAM_TOP']}\">{$jsonData['RAM']['usage_percent']}% ~ " . convertKBtoGB($jsonData['RAM']['used']) . "GB / " . convertKBtoGB($jsonData['RAM']['total']) . "GB</div></td>";
     $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"ram_throttle\" style=\"border:none;width:30px;\" class=\"config warning text-right\" value=\"{$jsonData['RAM_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
-    $tr .= "<td align=\"left\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
+    $tr .= "<td class=\"{$diskClass}\" align=\"left\">{$jsonData['DISK']['usage_percent']}% ~ " . convertKBtoGB($jsonData['DISK']['used']) . "GB / " . convertKBtoGB($jsonData['DISK']['total']) . "GB</td>";
     $tr .= "<td class=\"nowrap\" align=\"right\" style=\"width:30px; color:#888;\"><input type=\"text\" data-key=\"{$jsonData['PLATFORM']}_{$jsonData['PUBLIC_IP']}\" name=\"disk_throttle\" style=\"border:none;width:30px;\"class=\"config warning text-right\" value=\"{$jsonData['DISK_THROTTLE']}\" pattern=\"[0-9]*\" autocomplete=\"off\" />%</td>";
     $tr .= "<td align=\"right\" class=\"nowrap\">{$updatedAt}</td>";
-    $tr .= "<td align=\"center\" class=\"nowrap\"><a href=\"javascript:deleteRecord('{$fileName}')\" style=\"color:#F00;\">Delete</a></td>";
+    $tr .= "<td align=\"center\" class=\"nowrap\"><a href=\"javascript:deleteRecord('{$fileName}')\" style=\"color:#607d8b;\">Delete</a></td>";
     $tr .= "</tr>";
   }
 
@@ -150,6 +155,10 @@ try {
     padding: 5px;
   }
 
+  .red {
+    color: red;
+  }
+
   .text-right {
     text-align: right;
   }
@@ -160,6 +169,41 @@ try {
 
   .warning {
     color: #888;
+  }
+
+  .tooltip {
+    position: relative;
+    cursor: help;
+    text-decoration: 1px underline dotted;
+  }
+
+  .tooltip::after {
+    content: attr(data-detail);
+    white-space: pre-wrap;
+    /* Preserve whitespace */
+    word-wrap: break-word;
+    /* Break long words to prevent overflow */
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    width: max-content;
+    max-width: 1200px;
+    font-family: monospace;
+    /* Optional: Use monospace font to mimic <pre> tag */
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+  }
+
+  .tooltip:hover::after {
+    visibility: visible;
+    opacity: 1;
   }
 </style>
 
