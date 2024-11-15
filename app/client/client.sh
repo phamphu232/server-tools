@@ -66,13 +66,13 @@ DATA=$(cat <<EOF
     "INSTANCE_ID": "$INSTANCE_ID",
     "PUBLIC_IP": "$PUBLIC_IP",
     "CPU": "$CPU",
-    "CPU_TOP": "$CPU_TOP",
     "RAM": "$RAM",
-    "RAM_TOP": "$RAM_TOP",
     "DISK": "$DISK",
     "USERNAME": "$USERNAME",
     "TIMESTAMP": "$TIMESTAMP",
     "VERIFY_CODE": "$VERYFY_CODE"
+    "CPU_TOP": "\n$CPU_TOP",
+    "RAM_TOP": "\n$RAM_TOP",
 }
 EOF
 )
