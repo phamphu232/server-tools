@@ -104,9 +104,12 @@ try {
     $cacheConfigObj = new Cache("config/servers.json");
     if (empty($cacheConfigObj->get($keyCache))) {
         $cacheConfigObj->set($keyCache, [
-            'CPU_THROTTLE' => 96,
-            'RAM_THROTTLE' => 98,
-            'DISK_THROTTLE' => 96,
+            // 'CPU_THROTTLE' => 96,
+            // 'RAM_THROTTLE' => 98,
+            // 'DISK_THROTTLE' => 96,
+            'CPU_THROTTLE' => 0,
+            'RAM_THROTTLE' => 0,
+            'DISK_THROTTLE' => 0,
         ]);
     }
 
