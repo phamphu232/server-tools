@@ -25,4 +25,28 @@ class App
 
         return $ipAddress;
     }
+
+    public static function formatFailure($message, $data = null)
+    {
+        $format = [
+            'Result' => 'ERROR',
+            'Message' => $message,
+        ];
+        if (isset($data)) {
+            $format = array_merge($format, $data);
+        }
+        return $format;
+    }
+    public static function formatSuccess($message = '', $data = null)
+    {
+        $format = [
+            'Result' => 'OK',
+            'Message' => $message,
+            'Timestamp' => time(),
+        ];
+        if (isset($data)) {
+            $format = array_merge($format, $data);
+        }
+        return $format;
+    }
 }
