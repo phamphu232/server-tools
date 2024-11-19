@@ -80,6 +80,7 @@ try {
     }
 
 
+    $jsonData['KEY'] = $fileName;
     $jsonData['CLOUD_LINK'] = $cloudLink;
 
     unset($jsonData['INPUT_RAW']);
