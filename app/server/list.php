@@ -9,6 +9,18 @@ use helpers\App;
 use helpers\Config;
 use helpers\GoogleChat;
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+  header('Access-Control-Allow-Origin: *');
+  header('Access-Control-Allow-Headers: *');
+  header('Access-Control-Allow-Methods: POST, GET, DELETE, PUT, PATCH, OPTIONS');
+  header("Access-Control-Allow-Private-Network: true");
+  header('Content-Type: text/plain');
+  die();
+}
+header('Access-Control-Allow-Origin: *');
+header('Content-Type: application/json');
+
+
 $config = Config::get();
 
 function convertKBtoGB($kilobytes)
