@@ -176,6 +176,14 @@
                 </tr>
             </tbody>
         </table>
+
+        <div style="margin-top: 8px;">
+            <b>Notes:</b><br />
+            <i> - CPU, RAM: Warning if exceeding throttle for 5 minutes.</i><br />
+            <i> - DISK: Warning if exceeding throttle every 2 hours.</i><br />
+            <i> - MISSING REPORT: Warning every 15 minutes.</i><br />
+            <i> - DISABLE WARNING: Set throttle to 0.</i>
+        </div>
     </div>
 
     <script>
