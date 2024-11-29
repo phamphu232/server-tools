@@ -41,9 +41,9 @@ if [ -z "$PLATFORM" ]; then
     PUBLIC_IP=$(curl -4 -s http://ifconfig.me)
 fi
 
-CPU_TOP=$(ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | head -n 21 | awk '{printf "%s\\n", $0}')
+CPU_TOP=$(ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | head -n 51 | awk '{printf "%s\\n", $0}')
 
-RAM_TOP=$(ps -eo pid,ppid,cmd,%mem --sort=-%mem | head -n 21 | awk '{printf "%s\\n", $0}')
+RAM_TOP=$(ps -eo pid,ppid,cmd,%mem --sort=-%mem | head -n 51 | awk '{printf "%s\\n", $0}')
 
 CPU=$(top -bn1 | grep -i "Cpu(s)")
 
@@ -55,7 +55,7 @@ TIMESTAMP=$(date +%s)
 
 USERNAME=$(whoami)
 
-VERYFY_CODE=$(echo -n "VERIFY_CODE:${TIMESTAMP}_${PLATFORM}_${PUBLIC_IP}" | md5sum | awk '{print $1}')
+VERIFY_CODE=$(echo -n "VERIFY_CODE:${TIMESTAMP}_${PLATFORM}_${PUBLIC_IP}" | md5sum | awk '{print $1}')
 
 DATA=$(cat <<EOF
 {
@@ -70,7 +70,7 @@ DATA=$(cat <<EOF
     "DISK": "$DISK",
     "USERNAME": "$USERNAME",
     "TIMESTAMP": "$TIMESTAMP",
-    "VERIFY_CODE": "$VERYFY_CODE",
+    "VERIFY_CODE": "$VERIFY_CODE",
     "CPU_TOP": "$CPU_TOP",
     "RAM_TOP": "$RAM_TOP"
 }
