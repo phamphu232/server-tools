@@ -37,7 +37,7 @@ try {
 
     $verifyCode = md5("VERIFY_CODE:{$requestContent['TIMESTAMP']}_{$requestContent['PLATFORM']}_{$requestContent['PUBLIC_IP']}");
     if ($verifyCode != $requestContent['VERIFY_CODE']) {
-        throw new Exception('Verify code error');
+        throw new Exception("Verify code error, verifyCode check: {$verifyCode}, requestVerifyCode: {$requestContent['VERIFY_CODE']}");
     }
 
     $cpuParts = [];
