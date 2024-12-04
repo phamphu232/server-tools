@@ -145,22 +145,26 @@
                     </td>
                     <td><a :href="server.CLOUD_LINK" target="_blank" class="blue">{{ server.PLATFORM }}</a></td>
                     <td>{{ server.PUBLIC_IP }}</td>
-                    <td :class="parseInt(server.CPU.usage_percent) > parseInt(server.CPU_THROTTLE) ? 'tooltip red' : 'tooltip'"
-                        :data-detail="server.CPU_TOP">{{ server.CPU.usage_percent }}%</td>
+                    <td><span :class="parseInt(server.CPU.usage_percent) > parseInt(server.CPU_THROTTLE) ? 'tooltip red' : 'tooltip'"
+                    :data-detail="server.CPU_TOP">{{ server.CPU.usage_percent }}%</span></td>
                     <td class="w-50px think nowrap">
                         <input type="text" :data-key="server.KEY" name="cpu_throttle"
                             class="config warning text-right w-30px border-none" :value="server.CPU_THROTTLE"
-                            pattern="[0-9]*" autocomplete="off" @input="updateConfig($event.target)" />%
+                            pattern="[0-9]*" autocomplete="off" @input="updateConfig($event.target)" />
+                            <span :class="!!server.LAST_ALERT_RAM_TOP ? 'tooltip' : ''" :data-detail="server.LAST_ALERT_CPU_TOP" title="Last Alert">%</span>
                     </td>
-                    <td :class="parseInt(server.RAM.usage_percent) > parseInt(server.RAM_THROTTLE) ? 'tooltip red' : 'tooltip'"
+                    <td>
+                        <span :class="parseInt(server.RAM.usage_percent) > parseInt(server.RAM_THROTTLE) ? 'tooltip red' : 'tooltip'"
                         :data-detail="server.RAM_TOP">
                         {{ server.RAM.usage_percent }}% ~
                         {{convertKBtoGB(server['RAM']['used'])}}GB / {{convertKBtoGB(server['RAM']['total'])}}GB
+                        </span>
                     </td>
                     <td class="w-50px think nowrap">
                         <input type="text" :data-key="server.KEY" name="ram_throttle"
                             class="config warning text-right w-30px border-none" :value="server.RAM_THROTTLE"
-                            pattern="[0-9]*" autocomplete="off" @input="updateConfig($event.target)" />%
+                            pattern="[0-9]*" autocomplete="off" @input="updateConfig($event.target)" />
+                            <span :class="!!server.LAST_ALERT_RAM_TOP ? 'tooltip' : ''" :data-detail="server.LAST_ALERT_RAM_TOP" title="Last Alert">%</span>
                     </td>
                     <td :class="parseInt(server.DISK.usage_percent) > parseInt(server.DISK_THROTTLE) ? 'red' : ''">
                         {{ server.DISK.usage_percent}}% ~ {{convertKBtoGB(server['DISK']['used'])}}GB /

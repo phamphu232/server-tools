@@ -107,9 +107,9 @@ try {
             // 'CPU_THROTTLE' => 96,
             // 'RAM_THROTTLE' => 98,
             // 'DISK_THROTTLE' => 96,
-            'CPU_THROTTLE' => 0,
-            'RAM_THROTTLE' => 0,
-            'DISK_THROTTLE' => 0,
+            'CPU_THROTTLE' => 100,
+            'RAM_THROTTLE' => 100,
+            'DISK_THROTTLE' => 100,
         ]);
     }
 

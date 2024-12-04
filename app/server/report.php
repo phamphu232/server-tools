@@ -217,7 +217,12 @@ try {
             $messageTitle['full_disk'] = '[Full Disk]';
         }
 
-        if (!empty($missingReport) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
+        if (!empty($missingReport) || !empty($slowProcessing) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
+            if (!empty($slowProcessing) || !empty($heightCPU) || !empty($fullRAM)) {
+                $arrServerConfig[$keyCache]['LAST_ALERT_CPU_TOP'] = $server['CPU_TOP'];
+                $arrServerConfig[$keyCache]['LAST_ALERT_RAM_TOP'] = $server['RAM_TOP'];
+            }
+
             $cacheObj->set($keyCache, $arrServerConfig[$keyCache]);
 
             $cloudLink = "javascript:;";
