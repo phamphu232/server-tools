@@ -178,6 +178,8 @@ try {
         ) {
             $slowProcessing = "[Slow Processing]";
             $arrServerConfig[$keyCache]['LAST_ALERT_SLOW_PROCESSING'] = $nowTime;
+            $arrServerConfig[$keyCache]['LAST_ALERT_CPU_TOP'] = $server['CPU_TOP'];
+            $arrServerConfig[$keyCache]['LAST_ALERT_RAM_TOP'] = $server['RAM_TOP'];
             $messageTitle['slow_processing'] = '[Slow Processing]';
         }
 
@@ -190,6 +192,7 @@ try {
         ) {
             $heightCPU = "[High CPU: {$server['CPU']['usage_percent']}%]";
             $arrServerConfig[$keyCache]['LAST_ALERT_HIGH_CPU'] = $nowTime;
+            $arrServerConfig[$keyCache]['LAST_ALERT_CPU_TOP'] = $server['CPU_TOP'];
             $messageTitle['high_cpu'] = '[High CPU]';
         }
 
@@ -202,6 +205,7 @@ try {
         ) {
             $fullRAM = "[Full RAM: {$server['RAM']['usage_percent']}% ~ " . convertKBtoGB($server['RAM']['used']) . "GB / " . convertKBtoGB($server['RAM']['total']) . "GB]";
             $arrServerConfig[$keyCache]['LAST_ALERT_FULL_RAM'] = $nowTime;
+            $arrServerConfig[$keyCache]['LAST_ALERT_RAM_TOP'] = $server['RAM_TOP'];
             $messageTitle['full_ram'] = '[Full RAM]';
         }
 
@@ -218,11 +222,6 @@ try {
         }
 
         if (!empty($missingReport) || !empty($slowProcessing) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
-            if (!empty($slowProcessing) || !empty($heightCPU) || !empty($fullRAM)) {
-                $arrServerConfig[$keyCache]['LAST_ALERT_CPU_TOP'] = $server['CPU_TOP'];
-                $arrServerConfig[$keyCache]['LAST_ALERT_RAM_TOP'] = $server['RAM_TOP'];
-            }
-
             $cacheObj->set($keyCache, $arrServerConfig[$keyCache]);
 
             $cloudLink = "javascript:;";
