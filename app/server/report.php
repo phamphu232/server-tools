@@ -221,7 +221,7 @@ try {
             $messageTitle['full_disk'] = '[Full Disk]';
         }
 
-        if (!empty($missingReport) || !empty($slowProcessing) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
+        if (!empty($missingReport) || !empty($heightCPU) || !empty($fullRAM) || !empty($fullDisk)) {
             $cacheObj->set($keyCache, $arrServerConfig[$keyCache]);
 
             $cloudLink = "javascript:;";
