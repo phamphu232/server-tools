@@ -73,7 +73,8 @@
             padding: 10px;
             border-radius: 5px;
             width: max-content;
-            max-width: 1200px;
+            max-width: 100vw;
+            overflow-x: auto;
             font-family: monospace;
             /* Optional: Use monospace font to mimic <pre> tag */
             visibility: hidden;
