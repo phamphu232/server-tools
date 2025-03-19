@@ -231,26 +231,27 @@ try {
                 $cloudLink = "https://console.cloud.google.com/compute/instancesDetail/zones/{$server['ZONE_CODE']}/instances/{$server['INSTANCE_NAME']}?project={$server['PROJECT_ID']}&authuser=1";
             }
 
-            $message .= "Server: {$server['SERVER_NAME']} | Public IP: <a href=\"https://ipinfo.io/{$server['PUBLIC_IP']}/json\">{$server['PUBLIC_IP']}</a> | Platform: <a href=\"{$cloudLink}\">{$server['PLATFORM']}</a><br/>";
-            $message .= " => <b>{$missingReport}{$slowProcessing}{$heightCPU}{$fullRAM}{$fullDisk}</b><br/>";
+            $message .= "Server: {$server['SERVER_NAME']} | Public IP: <https://ipinfo.io/{$server['PUBLIC_IP']}/json\|{$server['PUBLIC_IP']}> | Platform: <{$cloudLink}|{$server['PLATFORM']}>\n";
+            $message .= " => \n{$missingReport}{$slowProcessing}{$heightCPU}{$fullRAM}{$fullDisk}\n";
 
-            $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
-            if (!empty($mentors)) {
-                $message .= " => {$mentors}<br/>";
+            // $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
+            if (!empty($server['PERSON_IN_CHARGE'])) {
+                $message .= " => {$server['PERSON_IN_CHARGE']}\n";
             }
-            $message .= "<br/>";
+            $message .= "\n";
         }
     }
 
     if (!empty($message)) {
         $messageTitle = implode(' | ', $messageTitle);
-        $signature = "<i>- Sent from: <a href=\"{$config['app_server']['url']}\">{$config['app_server']['name']}</a> at: " . date('Y-m-d H:i:s') . "(JST) -<i>";
-        $message = "<b>Servers {$messageTitle}</b><br/><br/>{$message}{$signature}";
+        $signature = "_- Sent from: <{$config['app_server']['url']}|{$config['app_server']['name']}>at: " . date('Y-m-d H:i:s') . "(JST) -_";
+        $message = "\nServers {$messageTitle}\n\n{$message}{$signature}";
     }
 
     if (!empty($message)) {
         echo $message;
-        Skype::send($message, $config['skype']['recipient'], $config['skype']['endpoint'], $config['skype']['username'], $config['skype']['password']);
+        // Skype::send($message, $config['skype']['recipient'], $config['skype']['endpoint'], $config['skype']['username'], $config['skype']['password']);
+        GoogleChat::send($message, $config['google_chat']['webhook_security_team']);
     } else {
         echo "Everything is okay.";
     }
