@@ -232,7 +232,7 @@ try {
             }
 
             $message .= "Server: {$server['SERVER_NAME']} | Public IP: <https://ipinfo.io/{$server['PUBLIC_IP']}/json\|{$server['PUBLIC_IP']}> | Platform: <{$cloudLink}|{$server['PLATFORM']}>\n";
-            $message .= " => \n{$missingReport}{$slowProcessing}{$heightCPU}{$fullRAM}{$fullDisk}\n";
+            $message .= " => {$missingReport}{$slowProcessing}{$heightCPU}{$fullRAM}{$fullDisk}\n";
 
             // $mentors = extractPersonInChargeSkype($server['PERSON_IN_CHARGE']);
             if (!empty($server['PERSON_IN_CHARGE'])) {
