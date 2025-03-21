@@ -164,9 +164,9 @@ try {
                 strtotime($nowTime) - strtotime($arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT']) > 15 * 60
             )
         ) {
-            $missingReport = "[Missing Report From: {$updatedAt}]";
+            $missingReport = "[Server Down From: {$updatedAt}]";
             $arrServerConfig[$keyCache]['LAST_ALERT_MISSING_REPORT'] = $nowTime;
-            $messageTitle['missing_report'] = '[Missing Report]';
+            $messageTitle['missing_report'] = '[Server Down]';
         }
 
         $slowProcessing = '';
