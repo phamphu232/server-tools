@@ -44,12 +44,12 @@ fi
 # CPU_TOP=$(ps -eo pid,ppid,%cpu,cmd --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')
 CPU_TOP=$(ps -eo pid,ppid,%cpu,cmd --sort=-%cpu | head -n 31 | \
     awk '{printf "%s\\n", $0}' | \
-    sed 's/"/\\"/g')
+    sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 
 # RAM_TOP=$(ps -eo pid,ppid,%mem,cmd --sort=-%mem | head -n 31 | awk '{printf "%s\\n", $0}')
 RAM_TOP=$(ps -eo pid,ppid,%mem,cmd --sort=-%mem | head -n 31 | \
     awk '{printf "%s\\n", $0}' | \
-    sed 's/"/\\"/g' )
+    sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 
 CPU=$(top -bn1 | grep -i "Cpu(s)")
 
