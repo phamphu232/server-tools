@@ -153,6 +153,9 @@ try {
     $messageTitle = [];
     $message = "";
     foreach ($arrWarning as $server) {
+        if (empty($server['SERVER_NAME'])) {
+            continue;
+        }
         $keyCache = "{$server['PLATFORM']}_{$server['PUBLIC_IP']}";
         $arrServerConfig[$keyCache] = !empty($arrServerConfig[$keyCache]) ? $arrServerConfig[$keyCache] : [];
 

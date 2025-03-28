@@ -120,7 +120,7 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>PERSON IN CHARGE <span class="think">(Skype)</span></th>
+                    <th>PERSON IN CHARGE <span class="think">(Google Chat)</span></th>
                     <th>SERVER NAME</th>
                     <th>PLATFORM</th>
                     <th>PUBLIC_IP</th>
