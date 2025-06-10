@@ -13,32 +13,36 @@ PROJECT_ID=""
 INSTANCE_ID=""
 PUBLIC_IP=""
 
+CURL_OPTS="-s --max-time 10"
+GCP_METADATA="http://metadata.google.internal/computeMetadata/v1"
+AWS_METADATA="http://169.254.169.254/latest/meta-data"
+
 # Check for GCP
-if curl -s --max-time 10 http://metadata.google.internal/computeMetadata/v1/instance/name -H "Metadata-Flavor: Google" >/dev/null 2>&1; then
+if curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google" >/dev/null 2>&1; then
     PLATFORM="GCP"
-    ZONE_CODE=$(curl -s --max-time 10 http://metadata.google.internal/computeMetadata/v1/instance/zone -H "Metadata-Flavor: Google" | awk -F'/' '{print $NF}')
-    INSTANCE_NAME=$(curl -s --max-time 10 http://metadata.google.internal/computeMetadata/v1/instance/name -H "Metadata-Flavor: Google")
-    PROJECT_ID=$(curl -s --max-time 10 http://metadata.google.internal/computeMetadata/v1/project/project-id -H "Metadata-Flavor: Google")
-    PUBLIC_IP=$(curl -s --max-time 10 http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip -H "Metadata-Flavor: Google")
-fi
+    ZONE_CODE=$(curl $CURL_OPTS "$GCP_METADATA/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $NF}')
+    INSTANCE_NAME=$(curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google")
+    PROJECT_ID=$(curl $CURL_OPTS "$GCP_METADATA/project/project-id" -H "Metadata-Flavor: Google")
+    PUBLIC_IP=$(curl $CURL_OPTS "$GCP_METADATA/instance/network-interfaces/0/access-configs/0/external-ip" -H "Metadata-Flavor: Google")
+    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
 
-if [ -z "$PLATFORM" ]; then
-    # Check for AWS (IMDSv2-compatible)
-    if TOKEN=$(curl -s --max-time 10 -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"); then
-        if curl -s --max-time 10 -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id >/dev/null 2>&1; then
-            PLATFORM="AWS"
-            ZONE_CODE=$(curl -s --max-time 10 -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
-            INSTANCE_ID=$(curl -s --max-time 10 -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
-            PUBLIC_IP=$(curl -s --max-time 10 -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
-        fi
-    fi
-fi
+# Check for AWS
+elif TOKEN=$(curl $CURL_OPTS -X PUT "$AWS_METADATA/../api/token" \
+    -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") && \
+    curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/instance-id" >/dev/null 2>&1; then
 
-# Default to UNKNOWN if not AWS or GCP
-if [ -z "$PLATFORM" ]; then
+    PLATFORM="AWS"
+    ZONE_CODE=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/placement/region")
+    INSTANCE_ID=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/instance-id")
+    PUBLIC_IP=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/public-ipv4")
+    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
+
+# Fallback
+else
     PLATFORM="UNKNOWN"
     INSTANCE_ID=$(hostname)
     PUBLIC_IP=$(curl -4 -s http://ifconfig.me)
+    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
 fi
 
 # CPU_TOP=$(ps -eo pid,ppid,%cpu,cmd --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')
