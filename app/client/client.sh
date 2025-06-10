@@ -26,25 +26,27 @@ safe_get_public_ip() {
         return 1
     fi
 
-    # Tách IP thành các octet
-    IFS='.' read -r o1 o2 o3 o4 <<< "$ip"
-
-    for octet in "$o1" "$o2" "$o3" "$o4"; do
-        # Kiểm tra là số
-        if ! [[ "$octet" =~ ^[0-9]+$ ]]; then
-            echo ""
-            return 1
-        fi
-
-        # Kiểm tra trong khoảng 0-255
-        if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
-            echo ""
-            return 1
-        fi
-    done
-
     echo "$ip"
-    return 0
+
+    # # Tách IP thành các octet
+    # IFS='.' read -r o1 o2 o3 o4 <<< "$ip"
+
+    # for octet in "$o1" "$o2" "$o3" "$o4"; do
+    #     # Kiểm tra là số
+    #     if ! [[ "$octet" =~ ^[0-9]+$ ]]; then
+    #         echo ""
+    #         return 1
+    #     fi
+
+    #     # Kiểm tra trong khoảng 0-255
+    #     if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
+    #         echo ""
+    #         return 1
+    #     fi
+    # done
+
+    # echo "$ip"
+    # return 0
 }
 
 # Check for GCP
@@ -73,6 +75,11 @@ else
     INSTANCE_ID=$(hostname)
     RAW_IP=$(curl -4 -s http://ifconfig.me)
     PUBLIC_IP=$(safe_get_public_ip "$RAW_IP")
+fi
+
+if [ -z "$PUBLIC_IP" ]; then
+    INTERNAL_IP=$(hostname -I | awk '{print $1}')
+    PUBLIC_IP="$INTERNAL_IP"
 fi
 
 # CPU_TOP=$(ps -eo pid,ppid,%cpu,cmd --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')

@@ -123,7 +123,7 @@
                     <th>PERSON IN CHARGE <span class="think">(Google Chat)</span></th>
                     <th>SERVER NAME</th>
                     <th>PLATFORM</th>
-                    <th>PUBLIC_IP</th>
+                    <th>IP</th>
                     <th colspan="2">CPU <span class="think">| Throttle</span></th>
                     <th colspan="2">RAM <span class="think">| Throttle</th>
                     <th colspan="2">DISK <span class="think">| Throttle</th>
