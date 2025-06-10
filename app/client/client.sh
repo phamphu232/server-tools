@@ -19,7 +19,7 @@ AWS_METADATA="http://169.254.169.254/latest/meta-data"
 
 safe_get_public_ip() {
     local ip="$1"
-    if [[ -z "$ip" || "$ip" == *"<html"* || "$ip" == *"<!DOCTYPE"* || ! "$ip" =~ ^[0-9]+(\.[0-9]+){3}$ ]]; then
+    if [[ -z "$ip" || "$ip" == *"<html"* || "$ip" == *"<!DOCTYPE"* || -z $(echo "$ip" | grep -E '^[0-9]+(\.[0-9]+){3}$') ]]; then
         echo ""
     else
         echo "$ip"
