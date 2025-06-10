@@ -17,14 +17,23 @@ CURL_OPTS="-s --max-time 10"
 GCP_METADATA="http://metadata.google.internal/computeMetadata/v1"
 AWS_METADATA="http://169.254.169.254/latest/meta-data"
 
+safe_get_public_ip() {
+    local ip="$1"
+    if [[ -z "$ip" || "$ip" == *"<html"* || "$ip" == *"<!DOCTYPE"* || ! "$ip" =~ ^[0-9]+(\.[0-9]+){3}$ ]]; then
+        echo ""
+    else
+        echo "$ip"
+    fi
+}
+
 # Check for GCP
 if curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google" >/dev/null 2>&1; then
     PLATFORM="GCP"
     ZONE_CODE=$(curl $CURL_OPTS "$GCP_METADATA/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $NF}')
     INSTANCE_NAME=$(curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google")
     PROJECT_ID=$(curl $CURL_OPTS "$GCP_METADATA/project/project-id" -H "Metadata-Flavor: Google")
-    PUBLIC_IP=$(curl $CURL_OPTS "$GCP_METADATA/instance/network-interfaces/0/access-configs/0/external-ip" -H "Metadata-Flavor: Google")
-    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
+    RAW_IP=$(curl $CURL_OPTS "$GCP_METADATA/instance/network-interfaces/0/access-configs/0/external-ip" -H "Metadata-Flavor: Google")
+    PUBLIC_IP=$(safe_get_public_ip "$RAW_IP")
 
 # Check for AWS
 elif TOKEN=$(curl $CURL_OPTS -X PUT "$AWS_METADATA/../api/token" \
@@ -34,15 +43,15 @@ elif TOKEN=$(curl $CURL_OPTS -X PUT "$AWS_METADATA/../api/token" \
     PLATFORM="AWS"
     ZONE_CODE=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/placement/region")
     INSTANCE_ID=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/instance-id")
-    PUBLIC_IP=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/public-ipv4")
-    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
+    RAW_IP=$(curl $CURL_OPTS -H "X-aws-ec2-metadata-token: $TOKEN" "$AWS_METADATA/public-ipv4")
+    PUBLIC_IP=$(safe_get_public_ip "$RAW_IP")
 
 # Fallback
 else
     PLATFORM="UNKNOWN"
     INSTANCE_ID=$(hostname)
-    PUBLIC_IP=$(curl -4 -s http://ifconfig.me)
-    if [[ "$PUBLIC_IP" == *"<html"* ]]; then PUBLIC_IP=""; fi
+    RAW_IP=$(curl -4 -s http://ifconfig.me)
+    PUBLIC_IP=$(safe_get_public_ip "$RAW_IP")
 fi
 
 # CPU_TOP=$(ps -eo pid,ppid,%cpu,cmd --sort=-%cpu | head -n 31 | awk '{printf "%s\\n", $0}')
