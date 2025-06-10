@@ -20,25 +20,26 @@ AWS_METADATA="http://169.254.169.254/latest/meta-data"
 safe_get_public_ip() {
     local ip="$1"
 
-    # Kiểm tra định dạng bằng regex cơ bản
+    # Kiểm tra định dạng IP cơ bản bằng regex
     if ! echo "$ip" | grep -E -q '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
         echo ""
         return 1
     fi
 
-    IFS='.' set -- $ip
+    # Tách IP thành các octet
+    IFS='.' read -r o1 o2 o3 o4 <<< "$ip"
 
-    for octet in "$@"; do
-        # Kiểm tra là số và không âm
-        if ! echo "$octet" | grep -qE '^[0-9]+$'; then
-        echo ""
-        return 1
+    for octet in "$o1" "$o2" "$o3" "$o4"; do
+        # Kiểm tra là số
+        if ! [[ "$octet" =~ ^[0-9]+$ ]]; then
+            echo ""
+            return 1
         fi
 
-        # Phải nhỏ hơn hoặc bằng 255
+        # Kiểm tra trong khoảng 0-255
         if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
-        echo ""
-        return 1
+            echo ""
+            return 1
         fi
     done
 
@@ -52,7 +53,7 @@ if curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google" >/
     ZONE_CODE=$(curl $CURL_OPTS "$GCP_METADATA/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $NF}')
     INSTANCE_NAME=$(curl $CURL_OPTS "$GCP_METADATA/instance/name" -H "Metadata-Flavor: Google")
     PROJECT_ID=$(curl $CURL_OPTS "$GCP_METADATA/project/project-id" -H "Metadata-Flavor: Google")
-    RAW_IP=$(curl $CURL_OPTS "$GCP_METADATA/instance/network-interfaces/0/access-configs/0/external-ip" -H "Metadata-Flavor: Google")
+    RAW_IP=$(curl -s --max-time 10 "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" -H "Metadata-Flavor: Google")
     PUBLIC_IP=$(safe_get_public_ip "$RAW_IP")
 
 # Check for AWS
