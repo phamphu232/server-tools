@@ -19,11 +19,31 @@ AWS_METADATA="http://169.254.169.254/latest/meta-data"
 
 safe_get_public_ip() {
     local ip="$1"
-    if [[ -z "$ip" || "$ip" == *"<html"* || "$ip" == *"<!DOCTYPE"* || -z $(echo "$ip" | grep -E '^[0-9]+(\.[0-9]+){3}$') ]]; then
+
+    # Kiểm tra định dạng bằng regex cơ bản
+    if ! echo "$ip" | grep -E -q '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
         echo ""
-    else
-        echo "$ip"
+        return 1
     fi
+
+    IFS='.' set -- $ip
+
+    for octet in "$@"; do
+        # Kiểm tra là số và không âm
+        if ! echo "$octet" | grep -qE '^[0-9]+$'; then
+        echo ""
+        return 1
+        fi
+
+        # Phải nhỏ hơn hoặc bằng 255
+        if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
+        echo ""
+        return 1
+        fi
+    done
+
+    echo "$ip"
+    return 0
 }
 
 # Check for GCP
